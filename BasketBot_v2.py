@@ -18,7 +18,6 @@ def move(x,y):
 
 # Function to drag from the center of the ball to sm coordinates
 #  to throw it with a certain angle to the ground
-
 def dragball(x,y):
 
     # Set cursor position in the center of the ball
