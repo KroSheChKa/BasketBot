@@ -56,7 +56,6 @@ def solve_4_angle(x,y):
 
         step = 0.35
         confidence = 0.1
-
         a = (lower + upper) / 2
 
         # This is the main QUADRATIC formula, the tarector is a parabola,
@@ -68,7 +67,7 @@ def solve_4_angle(x,y):
         if formula < 0:
             upper -= step
             lower -= step
-            print(f"Reduced by {step}")
+            #print(f"Reduced by {step}")
 
         # After finding a gap with only 1 angle we can find it
         # Here I decided to use binary search, due it's speed.
