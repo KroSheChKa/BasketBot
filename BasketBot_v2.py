@@ -8,6 +8,7 @@ import math
 import easyocr
 from openpyxl import load_workbook
 
+# Site with the game - https://vk.com/app6657931
 # The scale of the window - 150%
 # Window resolution 1720x1440
 
