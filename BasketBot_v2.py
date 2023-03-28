@@ -61,12 +61,11 @@ def angle_to_cord_x(a,y1):
     return x
 
 def add_to_excel(score):
-    path = Path('E:\Школа\Школа\информатика\Python\Basketball\Results.xlsx')
-    #name = "Results.xlsx"
-    wb = load_workbook(path)
+    #path = Path('E:\Школа\Школа\информатика\Python\Basketball\Results.xlsx')
+    wb = load_workbook("Results.xlsx")
     ws = wb['Data']
     ws.append(['Score:', score])
-    wb.save(path)
+    wb.save("Results.xlsx")
 
 sleep(1)
 
@@ -101,7 +100,7 @@ while keyboard.is_pressed('q') == False:
 
     if max_val_s > 0.95:
         scr_score = np.array(sct.grab(non_score))
-        reader = easyocr.Reader(['ru'], gpu = False)
+        reader = easyocr.Reader(['ru'], gpu = True)
         result = reader.readtext(scr_score, paragraph = True, detail=False)
         print(result)
 
