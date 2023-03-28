@@ -61,7 +61,7 @@ def angle_to_cord_x(a,y1):
     return x
 
 def add_to_excel(score):
-    #path = Path('E:\Школа\Школа\информатика\Python\Basketball\Results.xlsx')
+    
     wb = load_workbook("Results.xlsx")
     ws = wb['Data']
     ws.append(['Score:', score])
