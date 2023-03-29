@@ -36,7 +36,7 @@ def dragball(x,y):
 def solve_4_angle(x,y):
 
     # Physical parameters of game world:
-        # v0 - starting speed
+        # v0 - initial velocity
         # g - gravitational acceleration
         # a = angle. 90 is default value. angle could't be more than 90 degrees
     v0, g, a = 2670, 3990, 90
@@ -82,7 +82,7 @@ def solve_4_angle(x,y):
                     lower = a
                     #print('Lower', a, formula)
             else:
-                print('Angle:', a, formula)
+                print('Angle:', a)
                 return a
 
 # The function that calculates at what coordinates to move the cursor to throw the ball
@@ -98,7 +98,7 @@ def replay():
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
     sleep(0.4)
 
-# Not really needed function. Just to collect data (score).
+# Finction just to collect data (scores).
 # Results are in "Results.xlsx"
 def add_to_excel(score):
     wb = load_workbook("Results.xlsx")
