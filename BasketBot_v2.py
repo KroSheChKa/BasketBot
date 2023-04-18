@@ -18,10 +18,10 @@ def move(x,y):
 
 # Function to drag from the center of the ball to sm coordinates
 #  to throw it with a certain angle to the ground
-def dragball(x,y):
+def dragball(x, y, c_b):
 
     # Set cursor position in the center of the ball
-    move(center_b[0] + 662, center_b[1] + 285)
+    move(c_b[0] + 662, c_b[1] + 285)
 
     sleep(0.05)
 
@@ -39,7 +39,7 @@ def solve_4_angle(x,y):
         # v0 - initial velocity
         # g - gravitational acceleration
         # a = angle. 90 is default value. angle could't be more than 90 degrees
-    v0, g, a = 2670, 3990, 90
+    v0, g, a = 2771, 4200, 90
 
     # Lower and upper - borders
     lower = 89
@@ -82,7 +82,7 @@ def solve_4_angle(x,y):
                     lower = a
                     #print('Lower', a, formula)
             else:
-                print('Angle:', a)
+                print('Angle:', round(a, 4))
                 return a
 
 # The function that calculates at what coordinates to move the cursor to throw the ball
@@ -106,99 +106,108 @@ def add_to_excel(score):
     ws.append(['Score:', score])
     wb.save("Results.xlsx")
 
-sleep(1)
+def main():
+    # Reading 3 images + widht, height of a ring and a ball
+    score = cv2.imread('Score.png')
 
-# Reading 3 images
-score = cv2.imread('Score.png')
+    ring = cv2.imread('ring_new.png')
+    ring_w = ring.shape[1]
+    ring_h = ring.shape[0]
 
-ring = cv2.imread('ring.png')
-ring_w = ring.shape[1]
-ring_h = ring.shape[0]
+    basket = cv2.imread('Basket_cutted.png')
+    basket_w = basket.shape[1]
+    #basket_h = basket.shape[0] I decided make it static (y cordinate)
 
-basket = cv2.imread('Basket_cutted.png')
-basket_w = basket.shape[1]
-basket_h = basket.shape[0]
+    # "Activate" mss
+    sct = mss.mss()
 
-sct = mss.mss()
+    # This area of the game depends on your monitor resolution
+    play_zone = {'left': 662,'top': 285,'width': 617,'height': 1093}
 
-# This area of the game depends on your monitor resolution
-play_zone = {'left': 662,'top': 285,'width': 617,'height': 1093}
-
-# A small area to determine the end of the game
-score_zone = {'left': 776,'top': 295,'width': 200,'height': 50}
+    # A small area to determine the end of the game
+    score_zone = {'left': 776,'top': 295,'width': 200,'height': 50}
 
 # Actually the main(). Press Q to break
-while keyboard.is_pressed('q') == False:
+    while keyboard.is_pressed('q') == False:
     
     # Grabbing screenshot
-    scr = np.array(sct.grab(play_zone))
+        scr = np.array(sct.grab(play_zone))
 
-    # Delete the unnecessary alpha channel
-    scr_r = scr[:,:,:3]
-    
-    # Getting confidence and location of 3 objects
-    score_ = cv2.matchTemplate(scr_r, score, cv2.TM_CCOEFF_NORMED)
-    _, max_val_s, _, _ = cv2.minMaxLoc(score_)
-
-    bask = cv2.matchTemplate(scr_r, basket, cv2.TM_CCOEFF_NORMED)
-    _, max_val_b, _, max_loc_b = cv2.minMaxLoc(bask)
-
-    ringg = cv2.matchTemplate(scr_r, ring, cv2.TM_CCOEFF_NORMED)
-    _, max_val_r, _, max_loc_r = cv2.minMaxLoc(ringg)
-
-    # In this step we check if the game is over, saving data, repeat game
-    if max_val_s > 0.95:
-        scr_score = np.array(sct.grab(score_zone))
-
-        # Because the game is in Russian, it will be read with 'ru' parameter,
-        #  however it doesn't really important. We only need a value (score)
-        reader = easyocr.Reader(['ru'], gpu = True)
-        result = reader.readtext(scr_score, paragraph = True, detail=False)
-
-        # Getting the score
-        score_list = result[0].split(':')
-        score_now = int(score_list[-1].strip())
-
-        # Adding to an excel file
-        add_to_excel(score_now)
-
-        print('Your score: ', score_now)
-
-        # Pressing the replay button
-        replay()
-
-    # Values are optimized to exclude the possibility of incorrect detection
-    if (max_val_b > 0.88) and (max_val_r > 0.88):
-
-        # As in physics, we start from the center of objects
-        # The second arg. in center_b I decided to set up manually,
-        #  beacause ball is bouncing, but the object itself is fixed
-        center_b = (max_loc_b[0] + (basket_w //2), 973)
-        center_r = (max_loc_r[0] + (ring_w//2), max_loc_r[1] + (ring_h//2) - 10) 
-
-        #print(f"Max Val B: {max_val_b} Max Val R: {max_val_r} Ball center: {center_b}, Ring center: {center_r}")
-
-        # The difference between the centers of coordinates of the hoop and the ball
-        x = abs(center_b[0] - center_r[0])
-        y = abs(center_b[1] - center_r[1])
-
-        # Getting an angle
-        angle = solve_4_angle(x,y)
+        # Delete the unnecessary alpha channel
+        scr_r = scr[:,:,:3]
         
-        # y1 - static value of a bigger cathetus in a right triangle.
-        y1 = 960
+        # Getting confidence and location of 3 objects
+        score_ = cv2.matchTemplate(scr_r, score, cv2.TM_CCOEFF_NORMED)
+        _, max_val_s, _, _ = cv2.minMaxLoc(score_)
 
-        # x1 - searchable value of another cathetus
-        x1 = round(angle_to_cord_x(angle,y1)*2.122)
-        # RANDOM coefficient-----------------^^^^^ (need to resolve)
+        bask = cv2.matchTemplate(scr_r, basket, cv2.TM_CCOEFF_NORMED)
+        _, max_val_b, _, max_loc_b = cv2.minMaxLoc(bask)
 
-        # Determine which way to throw. Right/Left
-        if center_r[0] >= center_b[0]:
-            dragball(round(662 + center_b[0] + x1), (285 + center_b[1] - y1))
-            print(662 + center_b[0] + x1, (285 + center_b[1] - y1))
-        else:
-            dragball(round(662 + center_b[0] - x1), (285 + center_b[1] - y1))
-            print(662 + center_b[0] - x1, (285 + center_b[1] - y1))
+        ringg = cv2.matchTemplate(scr_r, ring, cv2.TM_CCOEFF_NORMED)
+        _, max_val_r, _, max_loc_r = cv2.minMaxLoc(ringg)
 
-        # Bot throws and sleeps for sm time
-        sleep(1.78)
+        # In this step we check if the game is over, saving data, repeat game
+        if max_val_s > 0.95:
+            scr_score = np.array(sct.grab(score_zone))
+
+            # Because the game is in Russian, it will be read with 'ru' parameter,
+            #  however it doesn't really important. We only need a value (score)
+            reader = easyocr.Reader(['ru'], gpu = True)
+            result = reader.readtext(scr_score, paragraph = True, detail=False)
+
+            # Getting the score
+            score_list = result[0].split(':')
+            score_now = int(score_list[-1].strip())
+
+            # Adding to an excel file
+            add_to_excel(score_now)
+
+            print('Your score: ', score_now)
+
+            # Pressing the replay button
+            replay()
+
+        # Values are optimized to exclude the possibility of incorrect detection
+        #if (max_val_b > 0.88) and (max_val_r > 0.88):
+        if max_val_b > 0.8:
+            
+            # As in physics, we start from the center of objects
+            # The second arg. in center_b I decided to set up manually,
+            #  beacause ball is bouncing, but the object itself is fixed
+            center_b = (max_loc_b[0] + basket_w //2, 973)
+            center_r = (max_loc_r[0] + ring_w//2, max_loc_r[1] + ring_h // 2) 
+
+            print(f"Max Val B: {max_val_b} Max Val R: {max_val_r} Ball center: {center_b}, Ring center: {center_r}")
+
+            # The difference between the centers of coordinates of the hoop and the ball
+            x = abs(center_b[0] - center_r[0])
+            y = abs(center_b[1] - center_r[1])
+
+            # Getting an angle
+            angle = solve_4_angle(x,y)
+            
+            # y1 - static value of a bigger cathetus in a right triangle.
+            y1 = 960
+
+            # x1 - searchable value of another cathetus
+            x1 = round(angle_to_cord_x(angle,y1)*2.15)
+            # RANDOM coefficient-----------------^^^^^ (need to resolve)
+
+            # Determine which way to throw. Right/Left
+            if center_r[0] >= center_b[0]:
+                dragball(round(662 + center_b[0] + x1), (285 + center_b[1] - y1), center_b)
+                
+            else:
+                dragball(round(662 + center_b[0] - x1), (285 + center_b[1] - y1), center_b)
+
+            # Bot throws and sleeps for sm time
+            sleep(2)
+
+# Entry point
+if __name__ == '__main__':
+
+    # Time to prepare
+    sleep(1)
+
+    # Runs a program
+    main()
