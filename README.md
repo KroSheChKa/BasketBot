@@ -14,11 +14,22 @@
 
 >At the 2d stage, I had some difficulties with the derivation of the formula, because it must include the physical properties of the inner world of the game. Not surprisingly that I didn't have such data. So I had to calculate the parameters of the world on my own, such as initial velocity(v0), gravitational acceleration(g). (Thanks to school physics, I did it.)
 
-**Here's a formula:**
+I did some calculations on the wall in my room:
+
+![IMG_0098](https://user-images.githubusercontent.com/104899233/232847993-deb48127-827f-455e-9220-8bce9557e147.jpg)
+> In the upper right corner you can see the calculation of the **gravitational acceleration (g)** and the **initial velocity (v₀)** with the only inputs that I was able to measure: **time (t)**, **height (h)** (in pixels). In the remaining part of the wall, the derivation of the full physical formula from the system of equations
+
+**Main output:**
 
 $$
-formula = (tan(radians(a)) * x) - (g*(pow(x, 2)))/(2*(pow(v0, 2))*pow((cos(radians(a)),2)))-y
+formula = tan(a) * x - \frac{g * x^2}{2 * v₀^2 * cos(a)^2} - y
 $$
+> To find the right angle, the formula must be close to zero*
+
+Implemented formula in python:
+```python
+formula = (tan(radians(a))*x) - (g*(pow(x, 2))) / (2*(pow(v0, 2)) * pow((cos(radians(a)), 2))) - y
+```
 
 `3. Execute the throw by moving the cursor with the pressed button.`
 
