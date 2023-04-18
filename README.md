@@ -72,5 +72,3 @@ The only reason why the bot loses is the rare in-game cases where the ball is in
 I created it for me and for my own pleasure, to learn new and interesting solutions and features, as well as to break the records of other players XD (It really makes me feel more confident and fulfilled).
 
 **If you find some bugs or shortcomings, please leave a comment about it.**
-
-*a new bot is coming soon...*
