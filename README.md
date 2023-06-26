@@ -5,6 +5,8 @@
 
 >I decided not to use the pyautogui library, as it is quite slow. It was replaced by win32(api/con) which are much faster and smoother than pyautogui. Also mss library much faster in making screenshots than method with pyautogui.
 
+**[Video](https://youtu.be/pxDiq9SRecY) in YouTube how BasketBot works!**
+
 ----
 **_Overall, the idea isn't really complicated. These 3 steps are implemented in the main program:_**
 
@@ -72,5 +74,3 @@ The only reason why the bot loses is the rare in-game cases where the ball is in
 I created it for me and for my own pleasure, to learn new and interesting solutions and features, as well as to break the records of other players XD (It really makes me feel more confident and fulfilled).
 
 **If you find some bugs or shortcomings, please leave a comment about it.**
-
-*a new bot is coming soon...*
