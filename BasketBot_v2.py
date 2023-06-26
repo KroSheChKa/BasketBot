@@ -39,7 +39,7 @@ def solve_4_angle(x,y):
         # v0 - initial velocity
         # g - gravitational acceleration
         # a = angle. 90 is default value. angle could't be more than 90 degrees
-    v0, g, a = 2771, 4200, 90
+    v0, g, a = 8581.71346292, 12356.6788523, 90
 
     # Lower and upper - borders
     lower = 89
@@ -48,7 +48,7 @@ def solve_4_angle(x,y):
     # A small optimization. We don't have to count an angle that close to 90,
     #  because it will play into the margin of error
     if x <= 8:
-        print("Here's your angle (close to 90):",a)
+        print("Your angle is approx. 90°")
         return a
     
     # Here 'q' button is needed to quit out of loop -> stop bot
@@ -177,7 +177,7 @@ def main():
             center_b = (max_loc_b[0] + basket_w //2, 973)
             center_r = (max_loc_r[0] + ring_w//2, max_loc_r[1] + ring_h // 2) 
 
-            print(f"Max Val B: {max_val_b} Max Val R: {max_val_r} Ball center: {center_b}, Ring center: {center_r}")
+            #print(f"Max Val B: {round(max_val_b, 4)} Max Val R: {round(max_val_r, 4)} Ball center: {center_b}, Ring center: {center_r}")
 
             # The difference between the centers of coordinates of the hoop and the ball
             x = abs(center_b[0] - center_r[0])
@@ -207,7 +207,7 @@ def main():
 if __name__ == '__main__':
 
     # Time to prepare
-    sleep(1)
+    sleep(0.5)
 
     # Runs a program
     main()
