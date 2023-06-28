@@ -13,7 +13,7 @@ import math
 # This function moves the cursor to x,y position
 def move(x,y):
     win32api.SetCursorPos((x,y))
-#play_zone = {'left': 662,'top': 285,'width': 617,'height': 1093}
+
 # Function to drag from the center of the ball to sm coordinates
 #  to throw it with a certain angle to the ground
 def dragball(x, y, c_b, left, top):
@@ -161,7 +161,7 @@ def main():
             dragball(round(center_b[0] + x_triangle), (center_b[1] - y_triangle),
                           center_b, play_zone['left'], play_zone['top'])
             
-            # Bot throws and sleeps for sm time
+            # Bot throws and sleeps for some time
             sleep(2)
 
 # Entry point

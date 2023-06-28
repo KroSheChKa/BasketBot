@@ -16,30 +16,30 @@ from openpyxl import load_workbook
 def move(x,y):
     win32api.SetCursorPos((x,y))
 
+
 # Function to drag from the center of the ball to sm coordinates
 #  to throw it with a certain angle to the ground
-def dragball(x, y, c_b):
+def dragball(x, y, c_b, left, top):
 
     # Set cursor position in the center of the ball
-    move(c_b[0] + 662, c_b[1] + 285)
+    move(c_b[0] + left, c_b[1] + top)
 
     sleep(0.05)
 
     # Press and hold...
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
     sleep(0.05)
-    move(x,y)
+    move(x + left,y + top)
     sleep(0.05)
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
 
-# solve_4_angle is a function to find exact angle to throw
-def solve_4_angle(x,y):
 
+# solve_4_angle is a function to find exact angle to throw
+def solve_4_angle(x,y, v0 = 2632.1094902, g = 3789.9344711, a = 90):
     # Physical parameters of game world:
         # v0 - initial velocity
         # g - gravitational acceleration
         # a = angle. 90 is default value. angle could't be more than 90 degrees
-    v0, g, a = 8581.71346292, 12356.6788523, 90
 
     # Lower and upper - borders
     lower = 89
@@ -55,7 +55,7 @@ def solve_4_angle(x,y):
     while keyboard.is_pressed('q') == False:
 
         step = 0.35
-        confidence = 0.1
+        confidence = 0.001
         a = (lower + upper) / 2
 
         # This is the main QUADRATIC formula, the tarector is a parabola,
@@ -72,17 +72,17 @@ def solve_4_angle(x,y):
         # After finding a gap with only 1 angle we can find it
         # Here I decided to use binary search, due it's speed.
         else:
-            while abs(formula) > confidence :
+            while abs(formula) >= confidence :
                 a = (lower + upper) / 2
                 formula = (math.tan(math.radians(a)) * x) - (g*(x**2))/(2*(v0**2)*(math.cos(math.radians(a))**2))-y
                 if formula < -confidence:
                     upper = a
                     #print('Upper', a, formula)
-                elif formula > confidence:
+                elif formula >= confidence:
                     lower = a
                     #print('Lower', a, formula)
             else:
-                print('Angle:', round(a, 4))
+                print('Angle:', round(a, 5), 'Radians:', round(a * math.pi / 180, 5))
                 return a
 
 # The function that calculates at what coordinates to move the cursor to throw the ball
@@ -92,7 +92,7 @@ def angle_to_cord_x(a,y1):
 
 # It clicks on replay button
 def replay():
-    move(977, 1267)
+    move(977, 1267) # Possition of replay button
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
     sleep(0.02)
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
@@ -168,14 +168,13 @@ def main():
             replay()
 
         # Values are optimized to exclude the possibility of incorrect detection
-        #if (max_val_b > 0.88) and (max_val_r > 0.88):
-        if max_val_b > 0.8:
+        if max_val_b > 0.87:
             
             # As in physics, we start from the center of objects
             # The second arg. in center_b I decided to set up manually,
             #  beacause ball is bouncing, but the object itself is fixed
             center_b = (max_loc_b[0] + basket_w //2, 973)
-            center_r = (max_loc_r[0] + ring_w//2, max_loc_r[1] + ring_h // 2) 
+            center_r = (max_loc_r[0] + ring_w//2 - 2, max_loc_r[1] + ring_h // 2) 
 
             #print(f"Max Val B: {round(max_val_b, 4)} Max Val R: {round(max_val_r, 4)} Ball center: {center_b}, Ring center: {center_r}")
 
@@ -186,21 +185,25 @@ def main():
             # Getting an angle
             angle = solve_4_angle(x,y)
             
-            # y1 - static value of a bigger cathetus in a right triangle.
-            y1 = 960
+            # y_triangle - static value of a bigger cathetus in a right triangle.
+            y_triangle = 960
+
+            # Coefficient that aligns the difference between the angle of 
+            # the ball and the cursor trajectory
+            coefficient = 2.195
 
             # x1 - searchable value of another cathetus
-            x1 = round(angle_to_cord_x(angle,y1)*2.15)
-            # RANDOM coefficient-----------------^^^^^ (need to resolve)
+            x_triangle = round(angle_to_cord_x(angle,y_triangle)*coefficient)
 
             # Determine which way to throw. Right/Left
-            if center_r[0] >= center_b[0]:
-                dragball(round(662 + center_b[0] + x1), (285 + center_b[1] - y1), center_b)
-                
-            else:
-                dragball(round(662 + center_b[0] - x1), (285 + center_b[1] - y1), center_b)
+            if center_r[0] <= center_b[0]:
+                x_triangle = -x_triangle
+            
+            # Dragging cursor
+            dragball(round(center_b[0] + x_triangle), (center_b[1] - y_triangle),
+                          center_b, play_zone['left'], play_zone['top'])
 
-            # Bot throws and sleeps for sm time
+            # Bot throws and sleeps for some time
             sleep(2)
 
 # Entry point
