@@ -46,7 +46,7 @@ def solve_4_angle(x,y, v0 = 2632.1094902, g = 3789.9344711, a = 90):
     if x <= 8:
         print("Your angle is approx. 90°")
         return a
-    
+
     # Here 'q' button is needed to quit out of loop -> stop bot
     while keyboard.is_pressed('q') == False:
 
@@ -103,10 +103,10 @@ def main():
 
     # This area of the game depends on your monitor resolution
     play_zone = {'left': 662,'top': 285,'width': 617,'height': 1093}
-    
+
     # Counter for emergency stop
     end_count = 0
-    
+
     # Actually the main(). Press Q to break
     while keyboard.is_pressed('q') == False:
         print('-' * 48)
@@ -125,7 +125,7 @@ def main():
         _, max_val_r, _, max_loc_r = cv2.minMaxLoc(ringg)
 
         print(f"Max Val B: {round(max_val_b, 4)} Max Val R: {round(max_val_r, 4)}")
-        
+
         # Values are optimized to exclude the possibility of incorrect detection
         if max_val_b > 0.885:
 
@@ -144,7 +144,7 @@ def main():
 
             # Getting an angle
             angle = solve_4_angle(x,y)
-            
+
             # y_triangle - static value of a bigger cathetus in a right triangle.
             y_triangle = 960
 
@@ -152,12 +152,12 @@ def main():
             # the ball and the cursor trajectory
             coefficient = 2.167
 
-            # I found out that angle is big when x and y are big too. So here's "solution":
+            # I found out that angle is quiet big when x and y are big too. So here's "solution":
             if x + y >= 960:
-                coefficient = coefficient + (math.sqrt(x+y - 960)/57)
- 
+                coefficient = coefficient + (math.sqrt(x + y - 960) / 57)
+
             print(f'Coefficient: {round(coefficient,4)} Difference: {abs(round(2.167 - coefficient, 4))}')
-            
+
             # x1 - searchable value of another cathetus
             x_triangle = round(angle_to_cord_x(angle,y_triangle)*coefficient)
 
@@ -171,7 +171,7 @@ def main():
 
             # Refresh the counter
             end_count = 0
-            
+
             # Bot throws and sleeps for some time
             sleep(2)
         else:
@@ -180,7 +180,7 @@ def main():
             if end_count == 3:
                 print('\n', '-' * 16, ' EMERGENCY STOP ', '-' * 16, sep = '')
                 break
-                
+
 
 # Entry point
 if __name__ == '__main__':

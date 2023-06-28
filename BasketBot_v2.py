@@ -108,6 +108,7 @@ def add_to_excel(score):
 
 def main():
     # Reading 3 images + widht, height of a ring and a ball
+    score_pink = cv2.imread('score_pink.png')
     score = cv2.imread('Score.png')
 
     ring = cv2.imread('ring_new.png')
@@ -127,6 +128,9 @@ def main():
     # A small area to determine the end of the game
     score_zone = {'left': 776,'top': 295,'width': 200,'height': 50}
 
+    # Counter for emergency stop
+    end_count = 0
+
 # Actually the main(). Press Q to break
     while keyboard.is_pressed('q') == False:
     
@@ -140,6 +144,9 @@ def main():
         score_ = cv2.matchTemplate(scr_r, score, cv2.TM_CCOEFF_NORMED)
         _, max_val_s, _, _ = cv2.minMaxLoc(score_)
 
+        score_pink_ = cv2.matchTemplate(scr_r, score_pink, cv2.TM_CCOEFF_NORMED)
+        _, max_val_s_p, _, _ = cv2.minMaxLoc(score_)
+        
         bask = cv2.matchTemplate(scr_r, basket, cv2.TM_CCOEFF_NORMED)
         _, max_val_b, _, max_loc_b = cv2.minMaxLoc(bask)
 
@@ -147,7 +154,7 @@ def main():
         _, max_val_r, _, max_loc_r = cv2.minMaxLoc(ringg)
 
         # In this step we check if the game is over, saving data, repeat game
-        if max_val_s > 0.95:
+        if max_val_s > 0.95 or max_val_s_p > 0.95:
             scr_score = np.array(sct.grab(score_zone))
 
             # Because the game is in Russian, it will be read with 'ru' parameter,
@@ -168,7 +175,7 @@ def main():
             replay()
 
         # Values are optimized to exclude the possibility of incorrect detection
-        if max_val_b > 0.87:
+        if max_val_b > 0.885:
             
             # As in physics, we start from the center of objects
             # The second arg. in center_b I decided to set up manually,
@@ -190,7 +197,11 @@ def main():
 
             # Coefficient that aligns the difference between the angle of 
             # the ball and the cursor trajectory
-            coefficient = 2.195
+            coefficient = 2.167
+
+            # I found out that angle is quiet big when x and y are big too. So here's "solution":
+            if x + y >= 955:
+                coefficient = coefficient + (math.sqrt(x + y - 955) / 53)
 
             # x1 - searchable value of another cathetus
             x_triangle = round(angle_to_cord_x(angle,y_triangle)*coefficient)
@@ -203,8 +214,17 @@ def main():
             dragball(round(center_b[0] + x_triangle), (center_b[1] - y_triangle),
                           center_b, play_zone['left'], play_zone['top'])
 
+            # Refresh the counter
+            end_count = 0
+
             # Bot throws and sleeps for some time
             sleep(2)
+        else:
+            sleep(0.3)
+            end_count += 1
+            if end_count == 3:
+                print('\n', '-' * 16, ' EMERGENCY STOP ', '-' * 16, sep = '')
+                break
 
 # Entry point
 if __name__ == '__main__':
