@@ -103,8 +103,11 @@ def main():
 
     # This area of the game depends on your monitor resolution
     play_zone = {'left': 662,'top': 285,'width': 617,'height': 1093}
-
-# Actually the main(). Press Q to break
+    
+    # Counter for emergency stop
+    end_count = 0
+    
+    # Actually the main(). Press Q to break
     while keyboard.is_pressed('q') == False:
         print('-' * 48)
     
@@ -122,9 +125,9 @@ def main():
         _, max_val_r, _, max_loc_r = cv2.minMaxLoc(ringg)
 
         print(f"Max Val B: {round(max_val_b, 4)} Max Val R: {round(max_val_r, 4)}")
-
+        
         # Values are optimized to exclude the possibility of incorrect detection
-        if max_val_b > 0.87:
+        if max_val_b > 0.885:
 
             # As in physics, we start from the center of objects
             # The second arg. in center_b I decided to set up manually,
@@ -137,7 +140,7 @@ def main():
             # The difference between the centers of coordinates of the hoop and the ball
             x = abs(center_b[0] - center_r[0])
             y = abs(center_b[1] - center_r[1])
-            print(f'Distance: {x}, {y}')
+            print(f'Distance: {x}, {y}. Sum: {x+y}')
 
             # Getting an angle
             angle = solve_4_angle(x,y)
@@ -147,8 +150,13 @@ def main():
 
             # Coefficient that aligns the difference between the angle of 
             # the ball and the cursor trajectory
-            coefficient = 2.169
-            print('Coefficient:', coefficient)
+            coefficient = 2.167
+
+            # I found out that angle is big when x and y are big too. So here's "solution":
+            if x + y >= 960:
+                coefficient = coefficient + (math.sqrt(x+y - 960)/57)
+ 
+            print(f'Coefficient: {round(coefficient,4)} Difference: {abs(round(2.167 - coefficient, 4))}')
             
             # x1 - searchable value of another cathetus
             x_triangle = round(angle_to_cord_x(angle,y_triangle)*coefficient)
@@ -160,9 +168,19 @@ def main():
             # Dragging cursor
             dragball(round(center_b[0] + x_triangle), (center_b[1] - y_triangle),
                           center_b, play_zone['left'], play_zone['top'])
+
+            # Refresh the counter
+            end_count = 0
             
             # Bot throws and sleeps for some time
             sleep(2)
+        else:
+            sleep(0.3)
+            end_count += 1
+            if end_count == 3:
+                print('\n', '-' * 16, ' EMERGENCY STOP ', '-' * 16, sep = '')
+                break
+                
 
 # Entry point
 if __name__ == '__main__':
