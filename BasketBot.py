@@ -153,8 +153,8 @@ def main():
             coefficient = 2.167
 
             # I found out that angle is quiet big when x and y are big too. So here's "solution":
-            if x + y >= 960:
-                coefficient = coefficient + (math.sqrt(x + y - 960) / 57)
+            if x + y >= 955:
+                coefficient = coefficient + (math.sqrt(x + y - 955) / 53)
 
             print(f'Coefficient: {round(coefficient,4)} Difference: {abs(round(2.167 - coefficient, 4))}')
 

@@ -128,9 +128,6 @@ def main():
     # A small area to determine the end of the game
     score_zone = {'left': 776,'top': 295,'width': 200,'height': 50}
 
-    # Counter for emergency stop
-    end_count = 0
-
 # Actually the main(). Press Q to break
     while keyboard.is_pressed('q') == False:
     
@@ -145,7 +142,7 @@ def main():
         _, max_val_s, _, _ = cv2.minMaxLoc(score_)
 
         score_pink_ = cv2.matchTemplate(scr_r, score_pink, cv2.TM_CCOEFF_NORMED)
-        _, max_val_s_p, _, _ = cv2.minMaxLoc(score_)
+        _, max_val_s_p, _, _ = cv2.minMaxLoc(score_pink_)
         
         bask = cv2.matchTemplate(scr_r, basket, cv2.TM_CCOEFF_NORMED)
         _, max_val_b, _, max_loc_b = cv2.minMaxLoc(bask)
@@ -154,7 +151,7 @@ def main():
         _, max_val_r, _, max_loc_r = cv2.minMaxLoc(ringg)
 
         # In this step we check if the game is over, saving data, repeat game
-        if max_val_s > 0.95 or max_val_s_p > 0.95:
+        if (max_val_s > 0.9) or (max_val_s_p > 0.9):
             scr_score = np.array(sct.grab(score_zone))
 
             # Because the game is in Russian, it will be read with 'ru' parameter,
@@ -214,17 +211,9 @@ def main():
             dragball(round(center_b[0] + x_triangle), (center_b[1] - y_triangle),
                           center_b, play_zone['left'], play_zone['top'])
 
-            # Refresh the counter
-            end_count = 0
-
             # Bot throws and sleeps for some time
             sleep(2)
-        else:
-            sleep(0.3)
-            end_count += 1
-            if end_count == 3:
-                print('\n', '-' * 16, ' EMERGENCY STOP ', '-' * 16, sep = '')
-                break
+
 
 # Entry point
 if __name__ == '__main__':
