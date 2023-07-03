@@ -7,6 +7,8 @@
 
 **[Video](https://youtu.be/pxDiq9SRecY) in YouTube how BasketBot works!**
 
+![basketbot_gif](https://github.com/KroSheChKa/BasketBot/assets/104899233/dc98a915-1dc4-47bd-a097-cf7647bf0d83)
+
 ----
 **_Overall, the idea isn't really complicated. These 3 steps are implemented in the main program:_**
 
