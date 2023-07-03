@@ -5,9 +5,12 @@
 
 >I decided not to use the pyautogui library, as it is quite slow. It was replaced by win32(api/con) which are much faster and smoother than pyautogui. Also mss library much faster in making screenshots than method with pyautogui.
 
-**[Video](https://youtu.be/pxDiq9SRecY) in YouTube how BasketBot works!**
-
 ![basketbot_gif](https://github.com/KroSheChKa/BasketBot/assets/104899233/dc98a915-1dc4-47bd-a097-cf7647bf0d83)
+
+> **[Video](https://youtu.be/pxDiq9SRecY) in YouTube how BasketBot works!**
+
+- Use the **BasketBot** for single runs and manual checks!
+- Use the **BasketBot_v2** for idle runs and collecting data!
 
 ----
 **_Overall, the idea isn't really complicated. These 3 steps are implemented in the main program:_**
@@ -23,6 +26,8 @@ I did some calculations on the wall in my room:
 ![IMG_0098](https://user-images.githubusercontent.com/104899233/232847993-deb48127-827f-455e-9220-8bce9557e147.jpg)
 > In the upper right corner you can see the calculation of the **gravitational acceleration (g)** and the **initial velocity (v₀)** with the only inputs that I was able to measure: **time (t)**, **height (h)** (in pixels). In the remaining part of the wall, the derivation of the full physical formula from the system of equations
 
+> P.S. Actually I recalculated them on a bigger screen resolution to get more accurate data.
+
 **Main output:**
 
 $$
@@ -35,12 +40,27 @@ Implemented formula in python:
 formula = (tan(radians(a))*x) - (g*(pow(x, 2))) / (2*(pow(v0, 2)) * pow((cos(radians(a)), 2))) - y
 ```
 
-`3. Execute the throw by moving the cursor with the pressed button.`
+`3. Throw the ball with the left button pressed at a modified coefficient angle.`
 
-### The advanced version of the bot provides:
+So why do we need to enter some other coefficient when we can substitute values into the formula, find the angle, and throw?
 
-- *Automatically collect the score and add it to a small database.*
-- *Automatic restart of the game*
+**In this game, the angle of flight of the ball is different from the input angle**
+
+- So I had to come up with a solution. First, I introduced a constant, a coefficient. This solved the problem for the most part, but there were still a lot of flaws. After observation, I noticed that the **coefficient is dynamic** and you need to increase it as the distance between the ball and the ring increases.
+
+```python
+coefficient = 2.167
+if x + y >= 955: #As long as the distance doesn't reach 955 px, coef. is static
+    coefficient = coefficient + (math.sqrt(x + y - 955) / 53) # Compensate angle
+```
+
+**Formula calculation with a material point, not with an object**
+
+- As we know, in physics we usually take objects to be material points that have no distance at all. In my case, however, we are throwing a ball, which has a decent size! This creates a big problem, because where a material point will fly, the ball will not fly.
+
+  > This is often the reason for losing. The ball hits the ring and flies away
+
+![basketbot_angle](https://github.com/KroSheChKa/BasketBot/assets/104899233/2a348895-365f-4c45-a1f2-afdad140cdae)
 
 ----
 
@@ -71,7 +91,7 @@ The only reason why the bot loses is the rare in-game cases where the ball is in
 
 ---
 
-    I would love to optimize the bot to any scale, but I'm afraid that's probably impracticable with these technologies. 
+    I would love to optimize the bot to any scale, but I'm afraid that's probably impracticable. 
 
 I created it for me and for my own pleasure, to learn new and interesting solutions and features, as well as to break the records of other players XD (It really makes me feel more confident and fulfilled).
 
