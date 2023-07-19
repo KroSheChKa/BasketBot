@@ -4,7 +4,7 @@ import numpy as np
 import time
 import win32api, win32con
 import math
-import sys, ctypes, keyboard
+import sys, ctypes
 
 # Site with the game - https://vk.com/app6657931
 # The scale of the window - 150%
@@ -64,7 +64,7 @@ def solve_4_angle(x, y, v0, g, res_coef, a = 90):
         return a
 
     # Here 'q' button is needed to quit out of loop -> stop bot
-    while keyboard.is_pressed('q') == False:
+    while not(is_key_pressed(0x51)):
 
         step = 0.35
         confidence = 0.001
@@ -141,7 +141,7 @@ def main():
     end_count = 0
 
     # Press Q to break
-    while keyboard.is_pressed('q') == False:
+    while not(is_key_pressed(0x51)):
         print('-' * 48)
     
     # Grabbing screenshot
@@ -211,8 +211,13 @@ def main():
 
 # Entry point
 if __name__ == '__main__':
-    # Time to prepare
-    sleep_key(1)
+
+    # Press Q to start
+    while not(is_key_pressed(0x51)):
+        pass
+
+    # A small delay to let is_key_pressed() turn back to False
+    time.sleep(0.1)
 
     # Runs a program
     main()

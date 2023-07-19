@@ -3,7 +3,7 @@ import mss
 import numpy as np
 import time
 import win32api, win32con
-import sys, ctypes, keyboard
+import sys, ctypes
 import math
 import easyocr
 from openpyxl import load_workbook
@@ -21,12 +21,14 @@ def sleep_key(sec, key_code = 0x51):
     start_time = time.time()
     
     while True:
+        # Key pressed during the loop? - exit the entire program
         if is_key_pressed(key_code):
             sys.exit()
         
         current_time = time.time()
         elapsed_time = current_time - start_time
         
+        # If the time has run out, exit the loop
         if elapsed_time >= sec:
             break
 
@@ -52,11 +54,7 @@ def dragball(x, y, c_b, left, top):
 
 
 # solve_4_angle is a function to find exact angle to throw
-def solve_4_angle(x,y, v0 = 2632.1094902, g = 3789.9344711, a = 90):
-    # Physical parameters of game world:
-        # v0 - initial velocity
-        # g - gravitational acceleration
-        # a = angle. 90 is default value. angle could't be more than 90 degrees
+def solve_4_angle(x, y, v0, g, res_coef, a = 90):
 
     # Lower and upper - borders
     lower = 89
@@ -64,12 +62,12 @@ def solve_4_angle(x,y, v0 = 2632.1094902, g = 3789.9344711, a = 90):
 
     # A small optimization. We don't have to count an angle that close to 90,
     #  because it will play into the margin of error
-    if x <= 8:
+    if x <= int(8 * res_coef):
         print("Your angle is approx. 90°")
         return a
-    
+
     # Here 'q' button is needed to quit out of loop -> stop bot
-    while keyboard.is_pressed('q') == False:
+    while not(is_key_pressed(0x51)):
 
         step = 0.35
         confidence = 0.001
@@ -85,7 +83,7 @@ def solve_4_angle(x,y, v0 = 2632.1094902, g = 3789.9344711, a = 90):
             lower -= step
             #print(f"Reduced by {step}")
 
-        # After finding a gap with only 1 angle we can find it
+        # Here I decided to use binary search, due it's speed.
         else:
             while abs(formula) >= confidence :
                 a = (lower + upper) / 2
@@ -113,8 +111,8 @@ def replay():
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
     sleep_key(0.4)
 
-# Finction just to collect data (scores).
-# Results are in "Results.xlsx"
+# Function just to collect data (scores)
+# Results saves in "Results.xlsx"
 def add_to_excel(score):
     wb = load_workbook("Results.xlsx")
     ws = wb['Data']
@@ -122,9 +120,25 @@ def add_to_excel(score):
     wb.save("Results.xlsx")
 
 def main():
-    # Reading 3 images + widht, height of a ring and a ball
+
+    # Height of the screen
+    h_screen = win32api.GetSystemMetrics(1)
+
+    # A coefficient to equalize some data for the current environment
+    resolution_coefficient = h_screen / 1440
+
+    # Physical parameters of game world:
+    v0 = 2632.1094902 * resolution_coefficient # - initial velocity
+    g = 3789.9344711 * resolution_coefficient # - gravitational acceleration
+
+    # Reading 4 images + widht, height of a ring and a ball
     score_pink = cv2.imread(r'Images\score_pink.png')
+    score_pink_w = score_pink.shape[1]
+    score_pink_h = score_pink.shape[0]
+
     score = cv2.imread(r'Images\Score.png')
+    score_w = score.shape[1]
+    score_h = score.shape[0]
 
     ring = cv2.imread(r'Images\ring_new.png')
     ring_w = ring.shape[1]
@@ -132,7 +146,13 @@ def main():
 
     basket = cv2.imread(r'Images\Basket_cutted.png')
     basket_w = basket.shape[1]
-    #basket_h = basket.shape[0] I decided make it static (y cordinate)
+    basket_h = basket.shape[0]
+
+    # Resize to current resolution
+    ring = cv2.resize(ring, (ring_w, ring_h), interpolation = cv2.INTER_LANCZOS4)
+    basket = cv2.resize(basket, (basket_w, basket_h), interpolation = cv2.INTER_LANCZOS4)
+    score = cv2.resize(score, (score_w, score_h), interpolation = cv2.INTER_LANCZOS4)
+    score_pink = cv2.resize(score_pink, (score_pink_w, score_pink_h), interpolation = cv2.INTER_LANCZOS4)
 
     # "Activate" mss
     sct = mss.mss()
@@ -143,13 +163,17 @@ def main():
     # A small area to determine the end of the game
     score_zone = {'left': 776,'top': 295,'width': 200,'height': 50}
 
+    # y_triangle - static value of a bigger cathetus in a right triangle.
+    y_triangle = int(960 * resolution_coefficient)
+
     # Ball threshold. You can play with it if detection works incorrectly
     ball_threshold = 0.885
 
-# Actually the main(). Press Q to break
-    while keyboard.is_pressed('q') == False:
-    
-    # Grabbing screenshot
+    # Press Q to break
+    while not(is_key_pressed(0x51)):
+        print('-' * 48)
+
+        # Grabbing screenshot
         scr = np.array(sct.grab(play_zone))
 
         # Delete the unnecessary alpha channel
@@ -162,20 +186,14 @@ def main():
         score_pink_ = cv2.matchTemplate(scr_r, score_pink, cv2.TM_CCOEFF_NORMED)
         _, max_val_s_p, _, _ = cv2.minMaxLoc(score_pink_)
         
-        bask = cv2.matchTemplate(scr_r, basket, cv2.TM_CCOEFF_NORMED)
-        _, max_val_b, _, max_loc_b = cv2.minMaxLoc(bask)
-
-        ringg = cv2.matchTemplate(scr_r, ring, cv2.TM_CCOEFF_NORMED)
-        _, max_val_r, _, max_loc_r = cv2.minMaxLoc(ringg)
-
         # In this step we check if the game is over, saving data, repeat game
         if (max_val_s > 0.9) or (max_val_s_p > 0.9):
             scr_score = np.array(sct.grab(score_zone))
 
-            # Because the game is in Russian, it will be read with 'ru' parameter,
+            # Because the game is in russian, it will be read with 'ru' parameter,
             #  however it doesn't really important. We only need a value (score)
             reader = easyocr.Reader(['ru'], gpu = True)
-            result = reader.readtext(scr_score, paragraph = True, detail=False)
+            result = reader.readtext(scr_score, paragraph = True, detail = False)
 
             # Getting the score
             score_list = result[0].split(':')
@@ -189,32 +207,39 @@ def main():
             # Pressing the replay button
             replay()
 
+        bask = cv2.matchTemplate(scr_r, basket, cv2.TM_CCOEFF_NORMED)
+        _, max_val_b, _, max_loc_b = cv2.minMaxLoc(bask)
+
+        ringg = cv2.matchTemplate(scr_r, ring, cv2.TM_CCOEFF_NORMED)
+        _, max_val_r, _, max_loc_r = cv2.minMaxLoc(ringg)
+
+        print(f"Max Val B: {round(max_val_b, 4)} Max Val R: {round(max_val_r, 4)}")
+
         # Values are optimized to exclude the possibility of incorrect detection
         if max_val_b > ball_threshold:
             
-
             center_b = (max_loc_b[0] + basket_w // 2, 973) # 973 - y static value. Ball is always on this level
             center_r = (max_loc_r[0] + ring_w // 2 - 2, max_loc_r[1] + ring_h // 2) 
 
-            #print(f"Max Val B: {round(max_val_b, 4)} Max Val R: {round(max_val_r, 4)} Ball center: {center_b}, Ring center: {center_r}")
+            print(f"Ball center: {center_b}, Ring center: {center_r}")
 
             # The difference between the centers of coordinates of the hoop and the ball
             x = abs(center_b[0] - center_r[0])
             y = abs(center_b[1] - center_r[1])
+            print(f'Distance: {x}, {y}. Sum: {x+y}')
 
             # Getting an angle
-            angle = solve_4_angle(x,y)
-            
-            # y_triangle - static value of a bigger cathetus in a right triangle.
-            y_triangle = 960
+            angle = solve_4_angle(x, y, v0, g, resolution_coefficient)
 
             # Coefficient that aligns the difference between the angle of 
             # the ball and the cursor trajectory
             coefficient = 2.167
 
             # I found out that angle is quiet big when x and y are big too. So here's "solution":
-            if x + y >= 955:
-                coefficient = coefficient + (math.sqrt(x + y - 955) / 53)
+            if x + y >= 955 * resolution_coefficient:
+                coefficient = coefficient + (math.sqrt(x + y - 955 * resolution_coefficient) / 53)
+
+            print(f'Coefficient: {round(coefficient,4)} Difference: {abs(round(2.167 - coefficient, 4))}')
 
             # x1 - searchable value of another cathetus
             x_triangle = round(angle_to_cord_x(angle,y_triangle)*coefficient)
@@ -234,8 +259,12 @@ def main():
 # Entry point
 if __name__ == '__main__':
 
-    # Time to prepare
-    sleep_key(0.5)
+    # Press Q to start
+    while not(is_key_pressed(0x51)):
+        pass
+
+    # A small delay to let is_key_pressed() turn back to False
+    time.sleep(0.1)
 
     # Runs a program
     main()
