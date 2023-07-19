@@ -68,35 +68,53 @@ if x + y >= 955: #As long as the distance doesn't reach 955 px, coef. is static
 
 ## How to use?
 
-**I didn't really plan for anyone to use this bot, so you're unlikely to be able to run it, but...**
+#### Installation steps:
 
->The whole program is designed to have the game window open in a `specific area on the screen`. In addition there is the problem that the **OpenCV function doesn't like it when the size of the original pictures and the model on the screen are different**.
->- For example, the original picture of a ball is 100x100 pixels, and you have exactly the same ball on your screen, but with dimensions 50x50. The confidence of machine vision will be quite low, consequently it will not be possible to determine the exact coordinates of the object.
+- Install [python](https://www.python.org/downloads/) together with `IDLE` on your computer **(you should run the code via IDLE!)**
+- Clone this project by this command somewhere on your computer:
+> **Make sure you have downloaded [git](https://git-scm.com/downloads)!**
+```
+git clone https://github.com/KroSheChKa/BasketBot.git
+```
+- Open cmd in the created folder or press RButton in the folder and click "`Git Bash Here`" and paste that:
+```
+pip install -r requirements.txt
+```
+**Particular case:** *If you have a monitor 3440x1440, then simply place the window with the game exactly half the screen on the left, set the **window scale 150%** and run it via `Python IDLE`.*
 
-#### But if you have a 3440x1440 monitor, you have a good chance of breaking my record. Here is a little instruction:
+In other cases to run this code on your computer you will have to `change values` depending on the resolution of your monitor, such as:
 
-1. It is necessary to have an account in a popular CIS social network [VK.com](https://vk.com)
-2. Then go into the [Game](https://vk.com/app6657931)
-3. All you need is to set the `scale of the page 150%` and place the browser window (I used Chrome) `exactly halfway across the screen` on the `left half`
-4. Run the code using `Python IDLE`
-5. Make sure the game window is on the top. You will have a moment to remove the IDLE Shell from game area.
+```python 
+# This area of the game depends on your monitor resolution
+play_zone = {'left': 662,'top': 285,'width': 617,'height': 1093}
+```
+> Try to make it right on the borders of the game
 
+```python 
+# Change the second static value to where the center of the ball is relative to the y coordinate
+center_b = (max_loc_b[0] + basket_w // 2, 973)
+```
+*Also you may play with threshold coefficients if something goes wrong.*
 
-**If you are such a crazy person and want to run this code whatever the cost, then you will have to:**
-- Change many values related to the screen resolution
-- Re-screenshot the original images.
+- It is necessary to have an account in a popular CIS social network [VK.com](https://vk.com)
+  
+- Then go into the [Game](https://vk.com/app6657931)
+  
+- Make sure the game window is on the top. You will have a moment to remove the `IDLE Shell` from game area.
 
+And that's it.
 >I hope my detailed comments in the code will help you
 
 ----
 
 ## The only issue
-The only reason why the bot loses is the rare `in-game cases` where the ball is in the lower left/right corner and the ring is high in the opposite corner. Developers have not provided such an outcome and the ball just gets stuck on the basketball hoop and doesn't score :\
+The only reason why the bot loses is the rare `in-game cases` where the ball is in the lower left/right corner and the ring is high in the opposite corner. Developers have not provided such an outcome and the ball just gets stuck on the basketball hoop or it just doesn't fly to it and doesn't score :\
 
 ---
 
-    I would love to optimize the bot to any scale, but I'm afraid that's probably impracticable. 
+#### I created it for my own pleasure, to learn new and interesting solutions and features, as well as to break the records of other players XD (It really makes me feel more confident and fulfilled).
 
-I created it for me and for my own pleasure, to learn new and interesting solutions and features, as well as to break the records of other players XD (It really makes me feel more confident and fulfilled).
 
-**If you find some bugs or flaws, please leave a comment about it.**
+*Any suggestions? You found a bug?*
+
+-> Leave a comment in [Discussions](https://github.com/KroSheChKa/BasketBot/discussions)
