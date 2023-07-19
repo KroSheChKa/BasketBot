@@ -1,15 +1,31 @@
 import cv2
 import mss
-import keyboard
 import numpy as np
-from time import sleep
+import time
 import win32api, win32con
 import math
+import sys, ctypes, keyboard
 
 # Site with the game - https://vk.com/app6657931
 # The scale of the window - 150%
 # Window resolution 1720x1440
 
+def is_key_pressed(key):
+    return ctypes.windll.user32.GetAsyncKeyState(key) & 0x8000 != 0
+
+def sleep_key(sec, key_code = 0x51):
+    start_time = time.time()
+    
+    while True:
+        if is_key_pressed(key_code):
+            sys.exit()
+        
+        current_time = time.time()
+        elapsed_time = current_time - start_time
+        
+        if elapsed_time >= sec:
+            break
+        
 # This function moves the cursor to x,y position
 def move(x,y):
     win32api.SetCursorPos((x,y))
@@ -21,13 +37,13 @@ def dragball(x, y, c_b, left, top):
     # Set cursor position in the center of the ball
     move(c_b[0] + left, c_b[1] + top)
 
-    sleep(0.05)
+    sleep_key(0.05)
 
     # Press and hold...
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
-    sleep(0.05)
+    sleep_key(0.05)
     move(x + left,y + top)
-    sleep(0.05)
+    sleep_key(0.05)
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
 
 # solve_4_angle is a function to find exact angle to throw
@@ -90,11 +106,11 @@ def angle_to_cord_x(a,y1):
 def main():
     # Reading 2 images + widht, height of a ring and a ball
 
-    ring = cv2.imread('ring_new.png')
+    ring = cv2.imread(r'Images\ring_new.png')
     ring_w = ring.shape[1]
     ring_h = ring.shape[0]
 
-    basket = cv2.imread('Basket_cutted.png')
+    basket = cv2.imread(r'Images\Basket_cutted.png')
     basket_w = basket.shape[1]
     #basket_h = basket.shape[0] I decided make it static (y cordinate)
 
@@ -173,9 +189,9 @@ def main():
             end_count = 0
 
             # Bot throws and sleeps for some time
-            sleep(2)
+            sleep_key(2)
         else:
-            sleep(0.3)
+            sleep_key(0.3)
             end_count += 1
             if end_count == 3:
                 print('\n', '-' * 16, ' EMERGENCY STOP ', '-' * 16, sep = '')
@@ -185,7 +201,7 @@ def main():
 # Entry point
 if __name__ == '__main__':
     # Time to prepare
-    sleep(0.5)
+    sleep_key(0.7)
 
     # Runs a program
     main()
