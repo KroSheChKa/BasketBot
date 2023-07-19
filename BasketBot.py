@@ -19,12 +19,14 @@ def sleep_key(sec, key_code = 0x51):
     start_time = time.time()
     
     while True:
+        # Key pressed during the loop? - exit the entire program
         if is_key_pressed(key_code):
             sys.exit()
         
         current_time = time.time()
         elapsed_time = current_time - start_time
         
+        # If the time has run out, exit the loop
         if elapsed_time >= sec:
             break
 
@@ -49,7 +51,7 @@ def dragball(x, y, c_b, left, top):
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
 
 # solve_4_angle is a function to find exact angle to throw
-def solve_4_angle(x,y, v0, g, a = 90):
+def solve_4_angle(x, y, v0, g, res_coef, a = 90):
 
     # Lower and upper - borders
     lower = 89
@@ -57,7 +59,7 @@ def solve_4_angle(x,y, v0, g, a = 90):
 
     # A small optimization. We don't have to count an angle that close to 90,
     #  because it will play into the margin of error
-    if x <= 8:
+    if x <= int(8 * res_coef):
         print("Your angle is approx. 90°")
         return a
 
@@ -98,7 +100,6 @@ def angle_to_cord_x(a,y1):
     x = y1*math.tan(math.radians(90-a))
     return x
 
-
 def main():
 
     # Height of the screen
@@ -107,18 +108,22 @@ def main():
     # A coefficient to equalize some data for the current environment
     resolution_coefficient = h_screen / 1440
 
-# Physical parameters of game world:
+    # Physical parameters of game world:
     v0 = 2632.1094902 * resolution_coefficient # - initial velocity
     g = 3789.9344711 * resolution_coefficient # - gravitational acceleration
 
     # Reading 2 images + widht, height of a ring and a ball
     ring = cv2.imread(r'Images\ring_new.png')
-    ring_w = ring.shape[1]
-    ring_h = ring.shape[0]
+    ring_w = int(ring.shape[1] * resolution_coefficient)
+    ring_h = int(ring.shape[0] * resolution_coefficient)
 
     basket = cv2.imread(r'Images\Basket_cutted.png')
-    basket_w = basket.shape[1]
-    #basket_h = basket.shape[0] I decided make it static (y cordinate)
+    basket_w = int(basket.shape[1] * resolution_coefficient)
+    basket_h = int(basket.shape[0] * resolution_coefficient)
+
+    # Resize to current resolution
+    ring = cv2.resize(ring, (ring_w, ring_h), interpolation = cv2.INTER_LANCZOS4)
+    basket = cv2.resize(basket, (basket_w, basket_h), interpolation = cv2.INTER_LANCZOS4)
 
     # "Activate" mss
     sct = mss.mss()
@@ -131,10 +136,6 @@ def main():
 
     # Ball threshold. You can play with it if detection works incorrectly
     ball_threshold = 0.885
-
-    # Coefficient that aligns the difference between the angle of 
-    # the ball and the cursor trajectory
-    coefficient = 2.167
     
     # Counter for emergency stop
     end_count = 0
@@ -172,11 +173,15 @@ def main():
             print(f'Distance: {x}, {y}. Sum: {x+y}')
 
             # Getting an angle
-            angle = solve_4_angle(x, y, v0, g)
+            angle = solve_4_angle(x, y, v0, g, resolution_coefficient)
+
+            # Coefficient that aligns the difference between the angle of 
+            # the ball and the cursor trajectory
+            coefficient = 2.167
 
             # I found out that angle is quiet big when x and y are big too. So here's "solution":
-            if x + y >= 955:
-                coefficient = coefficient + (math.sqrt(x + y - 955) / 53)
+            if x + y >= 955 * resolution_coefficient:
+                coefficient = coefficient + (math.sqrt(x + y - 955 * resolution_coefficient) / 53)
 
             print(f'Coefficient: {round(coefficient,4)} Difference: {abs(round(2.167 - coefficient, 4))}')
 
@@ -207,7 +212,7 @@ def main():
 # Entry point
 if __name__ == '__main__':
     # Time to prepare
-    sleep_key(0.7)
+    sleep_key(1)
 
     # Runs a program
     main()
