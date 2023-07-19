@@ -12,9 +12,11 @@ from openpyxl import load_workbook
 # The scale of the window - 150%
 # Window resolution 1720x1440
 
+# Check whether the key is pressed
 def is_key_pressed(key):
     return ctypes.windll.user32.GetAsyncKeyState(key) & 0x8000 != 0
 
+# New sleep func. that you could stop by pressing the stop key (q = 0x51)
 def sleep_key(sec, key_code = 0x51):
     start_time = time.time()
     
@@ -78,14 +80,12 @@ def solve_4_angle(x,y, v0 = 2632.1094902, g = 3789.9344711, a = 90):
         formula = (math.tan(math.radians(a)) * x) - (g*(x**2))/(2*(v0**2)*(math.cos(math.radians(a))**2))-y
         
         # The second angle could interrupt us. We always need bigger angle.
-        #  So the borders are moving slightly till there won't be an angle in it
         if formula < 0:
             upper -= step
             lower -= step
             #print(f"Reduced by {step}")
 
         # After finding a gap with only 1 angle we can find it
-        # Here I decided to use binary search, due it's speed.
         else:
             while abs(formula) >= confidence :
                 a = (lower + upper) / 2
@@ -143,6 +143,9 @@ def main():
     # A small area to determine the end of the game
     score_zone = {'left': 776,'top': 295,'width': 200,'height': 50}
 
+    # Ball threshold. You can play with it if detection works incorrectly
+    ball_threshold = 0.885
+
 # Actually the main(). Press Q to break
     while keyboard.is_pressed('q') == False:
     
@@ -187,13 +190,11 @@ def main():
             replay()
 
         # Values are optimized to exclude the possibility of incorrect detection
-        if max_val_b > 0.885:
+        if max_val_b > ball_threshold:
             
-            # As in physics, we start from the center of objects
-            # The second arg. in center_b I decided to set up manually,
-            #  beacause ball is bouncing, but the object itself is fixed
-            center_b = (max_loc_b[0] + basket_w //2, 973)
-            center_r = (max_loc_r[0] + ring_w//2 - 2, max_loc_r[1] + ring_h // 2) 
+
+            center_b = (max_loc_b[0] + basket_w // 2, 973) # 973 - y static value. Ball is always on this level
+            center_r = (max_loc_r[0] + ring_w // 2 - 2, max_loc_r[1] + ring_h // 2) 
 
             #print(f"Max Val B: {round(max_val_b, 4)} Max Val R: {round(max_val_r, 4)} Ball center: {center_b}, Ring center: {center_r}")
 
