@@ -8,7 +8,6 @@ import sys, ctypes
 
 # Site with the game - https://vk.com/app6657931
 # The scale of the window - 150%
-# Window resolution 1720x1440
 
 # Check whether the key is pressed
 def is_key_pressed(key):
@@ -216,8 +215,8 @@ if __name__ == '__main__':
     while not(is_key_pressed(0x51)):
         pass
 
-    # A small delay to let is_key_pressed() turn back to False
-    time.sleep(0.1)
+    # Instantly release the button
+    win32api.keybd_event(0x51, 0, win32con.KEYEVENTF_KEYUP, 0)
 
     # Runs a program
     main()
