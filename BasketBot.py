@@ -27,7 +27,7 @@ def sleep_key(sec, key_code = 0x51):
         
         if elapsed_time >= sec:
             break
-        
+
 # This function moves the cursor to x,y position
 def move(x,y):
     win32api.SetCursorPos((x,y))
@@ -44,16 +44,12 @@ def dragball(x, y, c_b, left, top):
     # Press and hold...
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTDOWN,0,0)
     sleep_key(0.05)
-    move(x + left,y + top)
+    move(x + left, y + top)
     sleep_key(0.05)
     win32api.mouse_event(win32con.MOUSEEVENTF_LEFTUP,0,0)
 
 # solve_4_angle is a function to find exact angle to throw
-def solve_4_angle(x,y, v0 = 2632.1094902, g = 3789.9344711, a = 90):
-    # Physical parameters of game world:
-        # v0 - initial velocity
-        # g - gravitational acceleration
-        # a = angle. 90 is default value. angle could't be more than 90 degrees
+def solve_4_angle(x,y, v0, g, a = 90):
 
     # Lower and upper - borders
     lower = 89
@@ -104,8 +100,18 @@ def angle_to_cord_x(a,y1):
 
 
 def main():
-    # Reading 2 images + widht, height of a ring and a ball
 
+    # Height of the screen
+    h_screen = win32api.GetSystemMetrics(1)
+
+    # A coefficient to equalize some data for the current environment
+    resolution_coefficient = h_screen / 1440
+
+# Physical parameters of game world:
+    v0 = 2632.1094902 * resolution_coefficient # - initial velocity
+    g = 3789.9344711 * resolution_coefficient # - gravitational acceleration
+
+    # Reading 2 images + widht, height of a ring and a ball
     ring = cv2.imread(r'Images\ring_new.png')
     ring_w = ring.shape[1]
     ring_h = ring.shape[0]
@@ -120,13 +126,20 @@ def main():
     # This area of the game depends on your monitor resolution
     play_zone = {'left': 662,'top': 285,'width': 617,'height': 1093}
 
-    # Counter for emergency stop
-    end_count = 0
+    # y_triangle - static value of a bigger cathetus in a right triangle.
+    y_triangle = int(960 * resolution_coefficient)
 
     # Ball threshold. You can play with it if detection works incorrectly
     ball_threshold = 0.885
 
-    # Actually the main(). Press Q to break
+    # Coefficient that aligns the difference between the angle of 
+    # the ball and the cursor trajectory
+    coefficient = 2.167
+    
+    # Counter for emergency stop
+    end_count = 0
+
+    # Press Q to break
     while keyboard.is_pressed('q') == False:
         print('-' * 48)
     
@@ -159,14 +172,7 @@ def main():
             print(f'Distance: {x}, {y}. Sum: {x+y}')
 
             # Getting an angle
-            angle = solve_4_angle(x,y)
-
-            # y_triangle - static value of a bigger cathetus in a right triangle.
-            y_triangle = 960
-
-            # Coefficient that aligns the difference between the angle of 
-            # the ball and the cursor trajectory
-            coefficient = 2.167
+            angle = solve_4_angle(x, y, v0, g)
 
             # I found out that angle is quiet big when x and y are big too. So here's "solution":
             if x + y >= 955:
@@ -175,7 +181,7 @@ def main():
             print(f'Coefficient: {round(coefficient,4)} Difference: {abs(round(2.167 - coefficient, 4))}')
 
             # x1 - searchable value of another cathetus
-            x_triangle = round(angle_to_cord_x(angle,y_triangle)*coefficient)
+            x_triangle = round(angle_to_cord_x(angle, y_triangle)*coefficient)
 
             # Determine which way to throw. Right/Left
             if center_r[0] <= center_b[0]:
