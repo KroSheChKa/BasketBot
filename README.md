@@ -90,17 +90,25 @@ play_zone = {'left': 662,'top': 285,'width': 617,'height': 1093}
 ```
 > Try to make it right on the borders of the game
 
+In `BasketBot_v2` change theese values to a place where you see the result:
+```python 
+# A small area to determine the end of the game
+score_zone = {'left': 776,'top': 295,'width': 200,'height': 50}
+``` 
 ```python 
 # Change the second static value to where the center of the ball is relative to the y coordinate
 center_b = (max_loc_b[0] + basket_w // 2, 973)
 ```
 *Also you may play with threshold coefficients if something goes wrong.*
 
-- It is necessary to have an account in a popular CIS social network [VK.com](https://vk.com)
+- It is **necessary** to have an account in a popular CIS social network [VK.com](https://vk.com)
   
 - Then go into the [Game](https://vk.com/app6657931)
-  
-- Make sure the game window is on the top. You will have a moment to remove the `IDLE Shell` from game area.
+
+- Launch the bot **via `Python IDLE`**. Move the windows that pop out away from the window with the game.
+
+### Press Q to start. Press Q to stop the bot.
+> You can change the key to another using [that table](https://learn.microsoft.com/en-us/windows/win32/inputdev/virtual-key-codes)
 
 And that's it.
 >I hope my detailed comments in the code will help you
