@@ -122,6 +122,7 @@ The only reason why the bot loses is the rare `in-game cases` where the ball is 
 
 #### I created it for my own pleasure, to learn new and interesting solutions and features, as well as to break the records of other players XD (It really makes me feel more confident and fulfilled).
 
+---
 
 *Any suggestions? You found a bug?*
 
